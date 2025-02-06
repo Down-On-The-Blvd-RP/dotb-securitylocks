@@ -1,21 +1,32 @@
-RegisterNetEvent(Config.LockInteraction.lock)
-AddEventHandler(Config.LockInteraction.lock, function(door)
-    -- Lock door logic
-    print(door .. " is locked.")
-end)
+local doors = Config.DoorList
 
-RegisterNetEvent(Config.LockInteraction.unlock)
-AddEventHandler(Config.LockInteraction.unlock, function(door)
-    -- Unlock door logic
-    print(door .. " is unlocked.")
-end)
-
--- Example of a robbery event (you would trigger this based on the robbery logic in your game)
-RegisterNetEvent('dotb-securitylocks:robbery')
-AddEventHandler('dotb-securitylocks:robbery', function()
-    -- Send robbery notification to specified job
-    local playerJob = GetPlayerJob()
-    if playerJob.name == Config.RobberyNotification.jobType then
-        TriggerClientEvent('dotb-securitylocks:sendRobberyNotification', playerJob.name)
+RegisterNetEvent('dotb-securitylocks:updateDoorState')
+AddEventHandler('dotb-securitylocks:updateDoorState', function(doorId, state)
+    if doors[doorId] then
+        doors[doorId].locked = state
     end
 end)
+
+function AttemptBreakIn(doorId)
+    local door = doors[doorId]
+    if not door then return end
+
+    local hasItem = false
+    for _, item in pairs(door.breakInRequiredItems) do
+        if HasItem(item) then
+            hasItem = true
+            break
+        end
+    end
+
+    if hasItem then
+        TriggerServerEvent('dotb-securitylocks:notifyJobs', doorId, "breakin")
+        TriggerServerEvent('dotb-securitylocks:toggleDoor', doorId, false)
+    else
+        print("You don't have the required tools!")
+    end
+end
+
+function HasItem(item)
+    return true -- Placeholder (Update based on framework)
+end

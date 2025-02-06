@@ -1,56 +1,140 @@
+
 # dotb-securitylocks
 
-`dotb-securitylocks` is a FiveM resource designed to automatically lock and unlock doors for 24/7 stores, liquor stores, ammunition stores, and banks based on in-game time. The resource supports automatic door locking during after-hours and unlocking during business hours. It also sends robbery notifications to the police (or any other configured job) and supports multiple frameworks including ESX, QBCore, and QBox.
+## Description
 
-## Features:
-- **Automatic Door Locking**: Automatically locks and unlocks doors based on in-game time (after hours and business hours).
-- **Job-Based Notifications**: Sends robbery notifications to jobs like police or other defined roles when a robbery happens.
-- **Multi-Framework Support**: Compatible with ESX Legacy, QBCore, and QBox.
-- **Configurable Settings**: Modify door locations, lock times, and notification systems in the configuration file.
+**dotb-securitylocks** is a FiveM resource designed to provide a comprehensive door lock system compatible with **QBCore**, **ESX Legacy**, **QBox**, and **Standalone** frameworks. It supports automatic locking/unlocking of doors based on in-game time, provides notifications for break-ins and explosions, and integrates job-specific notifications for law enforcement, security companies, and fire departments. Additionally, it allows players to break into locked doors using specific tools and animations.
 
-## Requirements:
-- **FiveM Server** with the latest `cerulean` FX version.
-- Framework compatibility: ESX, QBCore, or QBox (ensure your server has one of these frameworks installed).
-- Optionally, you can use `ox_lib` or `qb_notify` for robbery notifications.
+---
 
-## Installation:
-1. **Download the Resource**:
-   - Download or clone the `dotb-securitylocks` resource into your `resources` folder in your FiveM server.
+## Features
 
-2. **Add to server configuration**:
-   - In your `server.cfg`, add the following line to ensure the resource starts when your server boots up:
-     ```bash
-     ensure dotb-securitylocks
-     ```
+- **Automatic Door Locking/Unlocking**: Doors automatically lock and unlock based on in-game time or configurable settings.
+- **Multiple Framework Support**: Works with **QBCore**, **ESX Legacy**, **QBox**, and **Standalone** modes.
+- **Break-In Detection**: Sends notifications to specific jobs when a break-in is detected.
+- **Explosion Detection**: Alerts fire departments when an explosion occurs near a door.
+- **Customizable Door List**: Easily add more doors with the option to configure lock/unlock timings.
+- **Support for Various Tools**: Players can use lockpicks, thermite, and crowbars to break into doors.
+- **Job Notifications**: Notifies relevant jobs for break-ins and explosions (Police, Security Companies, Fire Department).
+- **Animations for Tools**: Includes animations for breaking into doors with lockpicks, thermite, or crowbars.
+- **Locale Support**: Supports multiple languages including English, Spanish, French, German, Russian, and Portuguese.
 
-3. **Configure the Resource**:
-   - Open the `config.lua` file and modify the settings for the locations of the stores, the lock/unlock hours, and which notification system to use (either `ox_lib` or `qb_notify`).
-   - Modify the robbery notification settings and jobs that should receive notifications.
+---
 
-## Configuration:
-The configuration file `config.lua` allows you to modify:
-- **Store Locations**: Define coordinates and door names for 24/7 stores, liquor stores, ammunition stores, and banks.
-- **Lock Times**: Set the start and end hours for when the stores should be locked (after hours).
-- **Unlock Anytime**: Set to `true` if doors should be unlockable at any time, or set to `false` to follow the time-based locking.
-- **Notification System**: Choose between `ox_lib` or `qb_notify` for sending robbery notifications.
-- **Robbery Notifications**: Define which job types (such as police) will receive notifications during a robbery.
+## Installation
 
-### Example Configuration:
+1. Download and extract the **dotb-securitylocks** resource into your **resources** folder.
+2. Add the resource to your **server.cfg**:
+   ```txt
+   ensure dotb-securitylocks
+   ```
+3. Customize the `config.lua` file to add doors and set auto-lock times, required break-in tools, and job notifications.
+
+---
+
+## Configuration
+
+The configuration file is located in `config.lua`. This file allows you to customize door locations, lock/unlock times, required tools for breaking in, job notifications, and more. Example configuration:
+
 ```lua
-Config.LockTimes = {
-    start = 22,  -- 10 PM
-    end = 6,     -- 6 AM
+Config.DoorList = {
+    {
+        id = "store_247_1",
+        doors = {
+            {coords = vector3(373.875, 327.882, 103.566), heading = 0.0}  -- Door 1 location
+        },
+        locked = true,
+        autoLockTime = {lock = 20, unlock = 8},  -- Auto-lock after 20 minutes, unlock at 8am
+        breakInRequiredItems = {"lockpick", "weapon_crowbar"},
+        notifyJobs = {"police", "securoserv"},  -- Notifications for these jobs
+        fireAlarm = true  -- Send fire alarm if explosion happens
+    }
 }
+```
 
-Config.StoreDoors = {
-    { name = "24/7 Store", coords = vector3(25.7, -1346.5, 29.5), door = "store_door" },
-    { name = "Rob's Liquor", coords = vector3(1393.1, 3606.9, 34.9), door = "liquor_door" },
-    -- Add other locations here...
-}
+---
 
-Config.UnlockAnytime = true  -- Set to true if doors can be unlocked at any time
-Config.NotificationSystem = "ox_lib"  -- Choose between 'ox_lib' or 'qb_notify'
-Config.RobberyNotification = {
-    jobType = "police",  -- Job type to notify (e.g., 'police')
-    message = "A robbery is in progress at a store!"
-}
+## Exports
+
+### `dotb-securitylocks:toggleDoor(doorId, state)`
+- **Description**: Toggles the state of a door (lock or unlock).
+- **Parameters**: 
+  - `doorId` (string) - The ID of the door to toggle.
+  - `state` (boolean) - `true` to lock, `false` to unlock.
+  
+### `dotb-securitylocks:notifyJobs(doorId, alertType)`
+- **Description**: Notifies jobs of a break-in or explosion at a specific door.
+- **Parameters**: 
+  - `doorId` (string) - The ID of the door.
+  - `alertType` (string) - Either "breakin" or "explosion".
+
+---
+
+## Supported Jobs
+
+The resource sends notifications based on the `notifyJobs` configuration for each door. The supported jobs for notifications are:
+
+- **Police** (`police`)
+- **LSSD** (`lssd`)
+- **SAHP** (`sahp`)
+- **BCSO** (`bcso`)
+- **SecuroServ** (`securoserv`)
+- **Gruppe6** (`gruppe6`)
+- **Fire Department** (`fire`)
+
+---
+
+## Required Tools for Break-ins
+
+Players can break into doors using the following tools. The necessary items are checked and must be available in the player’s inventory for the break-in to be successful:
+
+- **Lockpick**
+- **Thermite**
+- **Weapon_Crowbar**
+
+---
+
+## Usage
+
+1. **Locking and Unlocking Doors**:  
+   Players can interact with doors to lock or unlock them based on their configuration.
+   
+2. **Breaking into Doors**:  
+   Players with the required tools (lockpick, thermite, or crowbar) can break into doors. Once the break-in occurs, the corresponding jobs are notified.
+
+3. **Automatic Locking**:  
+   Doors can be configured to automatically lock or unlock based on in-game time (e.g., at 20:00, doors lock; at 08:00, doors unlock).
+
+4. **Job Notifications**:  
+   When a break-in or explosion occurs, the configured jobs (police, security, fire) will receive a notification.
+
+---
+
+## Locales
+
+The resource supports multiple languages. You can configure the language by modifying the `lang` variable in the `client.lua` file. Available languages:
+
+- English (`en`)
+- Spanish (`es`)
+- French (`fr`)
+- German (`de`)
+- Russian (`ru`)
+- Portuguese (`pt`)
+
+---
+
+## Contributing
+
+Contributions are welcome! If you find any issues or want to add new features, feel free to open a pull request or report a bug on the [GitHub Repository](https://github.com/YourRepo/dotb-securitylocks).
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Contact
+
+For further inquiries or support, feel free to reach out to me via [Email](mailto:your.email@example.com).
